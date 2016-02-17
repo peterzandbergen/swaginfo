@@ -38,22 +38,10 @@ func NetInterfaces() (map[string][]string, error) {
 }
 
 // ContainerInfo contains the information to be returned in the JSON response.
+// And it can act as a http.Handler.
 type ContainerInfo struct {
 	Hostname  string
 	Addresses map[string][]string
-}
-
-// LoggingHandler is a middleware wraper that writes out the start and duration
-// of the request handler plus the requested URI.
-func LoggingHandler(h http.Handler) http.Handler {
-	f := func(w http.ResponseWriter, r *http.Request) {
-		t0 := time.Now()
-		h.ServeHTTP(w, r)
-		// w.Write([]byte("hallo"))
-		d := time.Now().Sub(t0)
-		fmt.Printf("%s, %s, %s\n", t0.String(), d.String(), r.URL.String())
-	}
-	return http.HandlerFunc(f)
 }
 
 func getContainerInfo() (*ContainerInfo, error) {
@@ -139,28 +127,18 @@ func RunServer() error {
 	return http.ListenAndServe(":8080", nil)
 }
 
+// LoggingHandler is a middleware wraper that writes out the start and duration
+// of the request handler plus the requested URI.
+func LoggingHandler(h http.Handler) http.Handler {
+	f := func(w http.ResponseWriter, r *http.Request) {
+		t0 := time.Now()
+		h.ServeHTTP(w, r)
+		d := time.Now().Sub(t0)
+		fmt.Printf("%s, %s, %s\n", t0.String(), d.String(), r.URL.String())
+	}
+	return http.HandlerFunc(f)
+}
+
 func main() {
-
 	RunServer()
-
-	//	n, err := os.Hostname()
-	//	if err != nil {
-	//		fmt.Printf("err: %s\n", err.Error())
-	//	} else {
-	//		fmt.Printf("Hostname: %s\n", n)
-	//	}
-
-	//	// Get the addresses.
-	//	addrs, err := NetInterfaces()
-	//	fmt.Printf("%sn", NetInterfacesString(addrs))
-
-	//	// Try another way.
-	//	a, err := net.InterfaceAddrs()
-	//	fmt.Printf(AddrSliceString(a))
-
-	//	jsb, err := json.MarshalIndent(a, "", "    ")
-	//	fmt.Println(string(jsb))
-
-	//	jsb, err = json.MarshalIndent(addrs, "", "    ")
-	//	fmt.Println(string(jsb))
 }
